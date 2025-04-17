@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+pydub
+openai-whisper
+numpy
+pandas
+matplotlib
+seaborn
+scikit-learn
+librosa
+torch
+python-dotenv
+sentence-transformers
+python-multipart
