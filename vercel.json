@@ -2,21 +2,14 @@
     "version": 2,
     "builds": [
         {
-            "src": "app.py",
-            "use": "@vercel/python",
-            "config": {
-                "pythonVersion": "3.12",
-                "maxLambdaSize": "15mb"
-            }
+            "src": "streamlit_app.py",
+            "use": "@streamlit/app"
         }
     ],
     "routes": [
         {
             "src": "/(.*)",
-            "dest": "app.py"
+            "dest": "streamlit_app.py"
         }
-    ],
-    "env": {
-        "PYTHONPATH": "."
-    }
+    ]
 } 
