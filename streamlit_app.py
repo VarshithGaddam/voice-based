@@ -4,9 +4,19 @@ import pandas as pd
 import numpy as np
 import tempfile
 import librosa
+import subprocess
+import sys
 from src.feature_extraction import count_pauses, extract_text_features, semantic_coherence
 from src.preprocessing import transcribe_audio
 from src.modeling import run_modeling
+
+# Check for ffmpeg
+def check_ffmpeg():
+    try:
+        subprocess.run(['ffmpeg', '-version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        return True
+    except (subprocess.SubprocessError, FileNotFoundError):
+        return False
 
 # Set page config
 st.set_page_config(
@@ -21,6 +31,14 @@ st.markdown("""
 This application analyzes voice recordings to detect cognitive patterns and provide insights.
 Upload a WAV file and get detailed analysis of speech patterns, hesitations, and more.
 """)
+
+# Check for ffmpeg
+if not check_ffmpeg():
+    st.error("""
+    FFmpeg is not installed or not in the PATH. This application requires FFmpeg for audio processing.
+    Please contact the administrator to install FFmpeg.
+    """)
+    st.stop()
 
 # File uploader
 uploaded_file = st.file_uploader("Upload a WAV file", type=["wav"])

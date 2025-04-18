@@ -1,0 +1,10 @@
+{
+  "name": "voice-cognitive-detection",
+  "version": "1.0.0",
+  "description": "Voice Cognitive Detection Application",
+  "scripts": {
+    "build": "pip install -r requirements.txt && apt-get update && apt-get install -y ffmpeg"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+} 
