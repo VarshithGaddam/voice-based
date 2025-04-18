@@ -12,3 +12,4 @@ torch
 python-dotenv
 sentence-transformers
 python-multipart
+flask

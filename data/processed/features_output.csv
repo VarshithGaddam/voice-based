@@ -1,2 +1,4 @@
 sample_id,pause_count,pause_avg_duration,speech_rate,pitch_variability,hesitation_count,lexical_diversity,incomplete_sentences,semantic_similarity,cluster,anomaly,risk_score
-DavidProwse_0.wav,56,0.6120116618075802,1.333255400540961,0,0,1.0,1,0,0,0,0.584
+antonyflew_5_1.wav,56,1.057274052478134,117.53424657534248,0,0,0.6011904761904762,0,0.28774505853652954,0,0,0.5
+antonyflew_5_2.wav,22,1.0448979591836736,87.6923076923077,0,0,0.9,0,0.0,0,0,0.523
+OtisChandler_5.wav,26,1.7402424559567418,218.7069990145167,0,0,0.517948717948718,0,0.25812995433807373,1,1,0.719

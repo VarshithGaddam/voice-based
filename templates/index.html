@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Voice Cognitive Detection</title>
+  <style>
+    body {
+      background: #f0f2f5;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
+
+    .container {
+      background-color: white;
+      margin-top: 50px;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      max-width: 700px;
+      width: 100%;
+    }
+
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+
+    label {
+      font-weight: bold;
+      color: #444;
+      display: block;
+      margin-top: 20px;
+    }
+
+    input[type="file"],
+    textarea,
+    input[type="submit"] {
+      width: 100%;
+      padding: 12px;
+      margin-top: 8px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+
+    input[type="submit"] {
+      background: #4A90E2;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      margin-top: 25px;
+    }
+
+    input[type="submit"]:hover {
+      background: #357ABD;
+    }
+
+    input[type="submit"]:disabled {
+      background: #cccccc;
+      cursor: not-allowed;
+    }
+
+    #result {
+      display: none;
+      margin-top: 30px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 12px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f7f7f7;
+      color: #333;
+    }
+
+    td {
+      background-color: #fff;
+    }
+
+    .success {
+      padding: 15px;
+      background-color: #e6f9ed;
+      border: 1px solid #b6e3c9;
+      border-radius: 8px;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      margin: 20px 0;
+      color: #666;
+    }
+
+    .loading::after {
+      content: "...";
+      animation: dots 1.5s steps(5, end) infinite;
+    }
+
+    @keyframes dots {
+      0%, 20% { content: "."; }
+      40% { content: ".."; }
+      60%, 100% { content: "..."; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>🧠 Voice Cognitive Detection</h2>
+    <form id="audioForm" enctype="multipart/form-data">
+      <label>🎤 Audio File (.wav)</label>
+      <input type="file" name="audio_file" accept=".wav" required>
+
+      <div id="transcriptionLoading" class="loading">Transcribing audio</div>
+
+      <label>📝 Transcript</label>
+      <textarea name="transcript" rows="5" placeholder="Transcript will appear here automatically..." required></textarea>
+
+      <input type="submit" value="Analyze Audio" id="analyzeButton">
+    </form>
+
+    <div id="result" class="success">
+      <h3>📊 Analysis Result:</h3>
+      <table id="resultTable">
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const audioInput = document.querySelector('input[type="file"]');
+    const transcriptArea = document.querySelector('textarea[name="transcript"]');
+    const analyzeButton = document.getElementById('analyzeButton');
+    const transcriptionLoading = document.getElementById('transcriptionLoading');
+
+    audioInput.addEventListener('change', async function(e) {
+      if (!this.files.length) return;
+
+      const file = this.files[0];
+      if (!file.name.endsWith('.wav')) {
+        alert('Please select a WAV file');
+        this.value = '';
+        return;
+      }
+
+      // Disable analyze button and show loading
+      analyzeButton.disabled = true;
+      transcriptionLoading.style.display = 'block';
+      transcriptArea.value = '';
+
+      const formData = new FormData();
+      formData.append('audio_file', file);
+
+      try {
+        const response = await fetch('/transcribe', {
+          method: 'POST',
+          body: formData
+        });
+
+        const result = await response.json();
+        
+        if (response.ok && result.transcript) {
+          transcriptArea.value = result.transcript;
+          analyzeButton.disabled = false;
+        } else {
+          throw new Error(result.error || 'Failed to transcribe audio');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error: ' + (error.message || 'Failed to transcribe audio'));
+        analyzeButton.disabled = false;
+      } finally {
+        transcriptionLoading.style.display = 'none';
+      }
+    });
+
+    document.getElementById("audioForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      
+      try {
+        analyzeButton.disabled = true;
+        const formData = new FormData(this);
+        
+        const response = await fetch('/process_audio', {
+          method: 'POST',
+          body: formData
+        });
+
+        let result;
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          result = await response.json();
+        } else {
+          throw new Error("Server response was not JSON");
+        }
+
+        if (response.ok) {
+          const data = result.data[0];
+          const tbody = document.getElementById("resultTable").querySelector("tbody");
+          tbody.innerHTML = "";
+
+          for (let key in data) {
+            const row = document.createElement("tr");
+            const value = typeof data[key] === 'number' ? data[key].toFixed(3) : data[key];
+            row.innerHTML = `<td>${key}</td><td>${value}</td>`;
+            tbody.appendChild(row);
+          }
+
+          document.getElementById("result").style.display = "block";
+        } else {
+          throw new Error(result.error || "An error occurred while processing the audio");
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        alert("Error: " + (error.message || "An unexpected error occurred"));
+      } finally {
+        analyzeButton.disabled = false;
+      }
+    });
+  </script>
+
+</body>
+</html>
